@@ -36,25 +36,25 @@ public class ReservationService {
     private final ApplicationEventPublisher eventPublisher;
 
     // ================= CREATE RESERVATION =================
-    @Transactional // 🔥 Ensures atomic operation (prevents race conditions)
+    @Transactional //  Ensures atomic operation (prevents race conditions)
     public ReservationResponse create(CreateReservationRequest req, String customerEmail) {
 
-        // 1️⃣ Fetch user (customer)
+        //  Fetch user (customer)
         User customer = userRepository.findByEmail(customerEmail)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // 2️⃣ Fetch restaurant
+        //  Fetch restaurant
         Restaurant restaurant = restaurantRepository.findById(req.getRestaurantId())
                 .orElseThrow(() -> new RuntimeException("Restaurant not found"));
 
-        // 3️⃣ Fetch time slot
+        //  Fetch time slot
         TimeSlot timeSlot = timeSlotRepository.findById(req.getTimeSlotId())
                 .orElseThrow(() -> new RuntimeException("Time slot not found"));
 
-        // 4️⃣ Parse reservation date
+        //  Parse reservation date
         LocalDate date = LocalDate.parse(req.getReservationDate());
 
-        // 5️⃣ ✅ Availability check before proceeding
+        //  Availability check before proceeding
         boolean isAvailable = availabilityService.hasAvailableTable(
                 req.getRestaurantId(),
                 date,
@@ -66,7 +66,7 @@ public class ReservationService {
             throw new RuntimeException("No available tables for this slot");
         }
 
-        // 6️⃣ Fetch all tables that can fit the guest count
+        //  Fetch all tables that can fit the guest count
         List<RestaurantTable> freeTables = tableRepository
                 .findByRestaurantIdAndCapacityGreaterThanEqual(
                         req.getRestaurantId(),
@@ -84,11 +84,11 @@ public class ReservationService {
                         ))
                 .collect(Collectors.toList());
 
-        // 7️⃣ Use Strategy Pattern to assign the best table
+        //  Use Strategy Pattern to assign the best table
         RestaurantTable assignedTable = tableAssignmentService
                 .assignTable("bestFit", freeTables, req.getGuestCount());
 
-        // 8️⃣ Build reservation entity
+        //  Build reservation entity
         Reservation reservation = Reservation.builder()
                 .customer(customer)
                 .restaurant(restaurant)
@@ -99,10 +99,10 @@ public class ReservationService {
                 .specialRequest(req.getSpecialRequest())
                 .build();
 
-        // 9️⃣ Save reservation
+        //  Save reservation
         Reservation saved = reservationRepository.save(reservation);
 
-        // 🔟 Publish event (Observer Pattern)
+        // Publish event (Observer Pattern)
         eventPublisher.publishEvent(new ReservationEvent(this, saved, "CREATED"));
 
         return mapToResponse(saved);
