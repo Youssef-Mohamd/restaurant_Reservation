@@ -5,14 +5,25 @@ import com.restaurant.reservation.strategyPattern.TableAssignmentStrategy;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class TableAssignmentService {
 
-    private final TableAssignmentStrategy strategy;
+    // get all sterategies
+    private final Map<String, TableAssignmentStrategy> strategies;
 
-    public RestaurantTable assignTable(List<RestaurantTable> availableTables, int guestCount) {
-        return strategy.assign(availableTables, guestCount);
+    public RestaurantTable assignTable(String type,
+                                       List<RestaurantTable> tables,
+                                       int guestCount) {
+
+        TableAssignmentStrategy strategy = strategies.get(type);
+
+        if (strategy == null) {
+            throw new RuntimeException("Invalid strategy type: " + type);
+        }
+
+        return strategy.assign(tables, guestCount);
     }
 }

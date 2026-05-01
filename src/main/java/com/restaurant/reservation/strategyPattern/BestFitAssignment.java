@@ -1,11 +1,11 @@
-package com.restaurant.reservation.strategyPattern.Interface;
+package com.restaurant.reservation.strategyPattern;
 
 import com.restaurant.reservation.entity.RestaurantTable;
 import org.springframework.stereotype.Component;
 import java.util.Comparator;
 import java.util.List;
 
-@Component
+@Component ("bestFit")
 public class BestFitAssignment implements TableAssignmentStrategy {
 
     @Override
