@@ -1,4 +1,4 @@
-package com.restaurant.reservation.strategyPattern;
+package com.restaurant.reservation.strategyPattern.Interface;
 
 import com.restaurant.reservation.entity.RestaurantTable;
 import org.springframework.stereotype.Component;
