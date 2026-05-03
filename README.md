@@ -165,36 +165,6 @@ users ──────────────── reservations ────
 - MySQL 8.x
 - Maven 3.x
 
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/your-username/restaurant-reservation.git
-cd restaurant-reservation
-```
-
-### 2. Create the database
-
-```sql
-CREATE DATABASE restaurant_db;
-```
-
-### 3. Configure application.properties
-
-```properties
-spring.datasource.url=jdbc:mysql://localhost:3306/restaurant_db
-spring.datasource.username=root
-spring.datasource.password=your_password
-
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.show-sql=true
-
-server.port=8081
-```
-
-### 4. Run the application
-
-```bash
-mvn spring-boot:run
 ```
 
 The API will be available at: `http://localhost:8081/api`
