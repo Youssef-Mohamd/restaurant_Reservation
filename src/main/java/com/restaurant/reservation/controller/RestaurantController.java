@@ -34,13 +34,14 @@ public class RestaurantController {
     @PostMapping("/{id}/image")
     public ResponseEntity<RestaurantResponse> uploadImage(
             @PathVariable Long id,
-            @RequestParam("file") MultipartFile file) throws IOException {
+            @RequestParam("file") MultipartFile file,
+            Authentication auth) throws IOException {
         
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
 
-        RestaurantResponse response = restaurantService.uploadImage(id, file);
+        RestaurantResponse response = restaurantService.uploadImage(id, file, auth.getName());
         return ResponseEntity.ok(response);
     }
 
@@ -54,5 +55,19 @@ public class RestaurantController {
     @GetMapping("/{id}")
     public ResponseEntity<RestaurantResponse> getById(@PathVariable Long id) {
         return ResponseEntity.ok(restaurantService.getById(id));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<RestaurantResponse> update(
+            @PathVariable Long id,
+            @Valid @RequestBody CreateRestaurantRequest req,
+            Authentication auth) {
+        return ResponseEntity.ok(restaurantService.update(id, req, auth.getName()));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id, Authentication auth) {
+        restaurantService.delete(id, auth.getName());
+        return ResponseEntity.noContent().build();
     }
 }

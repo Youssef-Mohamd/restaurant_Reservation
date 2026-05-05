@@ -45,9 +45,14 @@ public class RestaurantService {
     /**
      * Upload image for restaurant
      */
-    public RestaurantResponse uploadImage(Long restaurantId, MultipartFile imageFile) throws IOException {
+    public RestaurantResponse uploadImage(Long restaurantId, MultipartFile imageFile, String adminEmail) throws IOException {
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> new RuntimeException("Restaurant not found"));
+
+        // Check if user is the admin of this restaurant
+        if (!restaurant.getAdmin().getEmail().equals(adminEmail)) {
+            throw new RuntimeException("You can only upload images for your own restaurants");
+        }
 
         // Delete old image if exists
         if (restaurant.getImageUrl() != null && !restaurant.getImageUrl().isEmpty()) {
@@ -84,6 +89,50 @@ public class RestaurantService {
         Restaurant restaurant = restaurantRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Restaurant not found"));
         return mapToResponse(restaurant);
+    }
+
+    public RestaurantResponse update(Long restaurantId, CreateRestaurantRequest req, String adminEmail) {
+        Restaurant restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> new RuntimeException("Restaurant not found"));
+
+        // Check if user is the admin of this restaurant
+        if (!restaurant.getAdmin().getEmail().equals(adminEmail)) {
+            throw new RuntimeException("You can only update your own restaurants");
+        }
+
+        restaurant.setName(req.getName());
+        restaurant.setDescription(req.getDescription());
+        restaurant.setAddress(req.getAddress());
+        restaurant.setCity(req.getCity());
+        restaurant.setPhone(req.getPhone());
+        restaurant.setCuisineType(req.getCuisineType());
+        restaurant.setOpeningTime(LocalTime.parse(req.getOpeningTime()));
+        restaurant.setClosingTime(LocalTime.parse(req.getClosingTime()));
+
+        // Only update imageUrl if provided (don't overwrite with null)
+        if (req.getImageUrl() != null && !req.getImageUrl().isEmpty()) {
+            restaurant.setImageUrl(req.getImageUrl());
+        }
+
+        Restaurant updated = restaurantRepository.save(restaurant);
+        return mapToResponse(updated);
+    }
+
+    public void delete(Long restaurantId, String adminEmail) {
+        Restaurant restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> new RuntimeException("Restaurant not found"));
+
+        // Check if user is the admin of this restaurant
+        if (!restaurant.getAdmin().getEmail().equals(adminEmail)) {
+            throw new RuntimeException("You can only delete your own restaurants");
+        }
+
+        // Delete associated image file if exists
+        if (restaurant.getImageUrl() != null && !restaurant.getImageUrl().isEmpty()) {
+            fileStorageService.deleteRestaurantImage(restaurant.getImageUrl());
+        }
+
+        restaurantRepository.delete(restaurant);
     }
 
     private RestaurantResponse mapToResponse(Restaurant r) {

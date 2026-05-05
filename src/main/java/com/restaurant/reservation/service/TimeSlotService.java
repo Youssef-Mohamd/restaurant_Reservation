@@ -86,5 +86,8 @@ public class TimeSlotService {
     }
 
     public void delete(Long slotId) {
+        TimeSlot slot = timeSlotRepository.findById(slotId)
+                .orElseThrow(() -> new RuntimeException("Time slot not found"));
+        timeSlotRepository.delete(slot);
     }
 }
