@@ -6,6 +6,8 @@ import com.restaurant.reservation.entity.*;
 import com.restaurant.reservation.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -16,6 +18,7 @@ public class RestaurantService {
 
     private final RestaurantRepository restaurantRepository;
     private final UserRepository userRepository;
+    private final FileStorageService fileStorageService;
 
     public RestaurantResponse create(CreateRestaurantRequest req, String adminEmail) {
         User admin = userRepository.findByEmail(adminEmail)
@@ -37,6 +40,26 @@ public class RestaurantService {
 
         Restaurant saved = restaurantRepository.save(restaurant);
         return mapToResponse(saved);
+    }
+
+    /**
+     * Upload image for restaurant
+     */
+    public RestaurantResponse uploadImage(Long restaurantId, MultipartFile imageFile) throws IOException {
+        Restaurant restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> new RuntimeException("Restaurant not found"));
+
+        // Delete old image if exists
+        if (restaurant.getImageUrl() != null && !restaurant.getImageUrl().isEmpty()) {
+            fileStorageService.deleteRestaurantImage(restaurant.getImageUrl());
+        }
+
+        // Save new image
+        String imagePath = fileStorageService.saveRestaurantImage(imageFile);
+        restaurant.setImageUrl(imagePath);
+
+        Restaurant updated = restaurantRepository.save(restaurant);
+        return mapToResponse(updated);
     }
 
     public List<RestaurantResponse> getAll(String city, String cuisine) {

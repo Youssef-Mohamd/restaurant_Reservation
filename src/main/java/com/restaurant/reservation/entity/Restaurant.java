@@ -36,6 +36,7 @@ public class Restaurant {
     @Column(nullable = false)
     private String cuisineType;
 
+    @Column(columnDefinition = "TEXT")
     private String imageUrl;
 
     @Column(nullable = false)
