@@ -84,4 +84,7 @@ public class TimeSlotService {
                 .isActive(s.getIsActive())
                 .build();
     }
+
+    public void delete(Long slotId) {
+    }
 }
