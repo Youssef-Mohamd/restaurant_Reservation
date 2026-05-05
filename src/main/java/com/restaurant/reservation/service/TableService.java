@@ -64,4 +64,8 @@ public class TableService {
                 .isAvailable(t.getIsAvailable()) // Availability status
                 .build();
     }
+
+    public void delete(Long tableId) {
+        tableRepository.deleteById(tableId);
+    }
 }
