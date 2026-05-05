@@ -173,4 +173,12 @@ public class ReservationService {
                 .createdAt(r.getCreatedAt())
                 .build();
     }
+
+    public List<ReservationResponse> getTodayReservations(Long restaurantId) {
+        return reservationRepository
+                .findByRestaurantIdAndReservationDate(restaurantId, LocalDate.now())
+                .stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
 }
