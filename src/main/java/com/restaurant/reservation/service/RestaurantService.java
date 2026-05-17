@@ -44,14 +44,24 @@ public class RestaurantService {
 
     /**
      * Upload image for restaurant
+     * Allowed: Restaurant owner OR any ADMIN user
      */
-    public RestaurantResponse uploadImage(Long restaurantId, MultipartFile imageFile, String adminEmail) throws IOException {
+    public RestaurantResponse uploadImage(Long restaurantId, MultipartFile imageFile, String userEmail) throws IOException {
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> new RuntimeException("Restaurant not found"));
 
-        // Check if user is the admin of this restaurant
-        if (!restaurant.getAdmin().getEmail().equals(adminEmail)) {
-            throw new RuntimeException("You can only upload images for your own restaurants");
+        // Fetch user from database to check their actual role
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Check if user is authorized:
+        // 1. User is the owner of the restaurant, OR
+        // 2. User has ADMIN role
+        boolean isOwner = restaurant.getAdmin().getEmail().equals(userEmail);
+        boolean isAdmin = user.getRole() == Role.ADMIN;
+
+        if (!isOwner && !isAdmin) {
+            throw new RuntimeException("You can only upload images for your own restaurants or you must be an admin");
         }
 
         // Delete old image if exists

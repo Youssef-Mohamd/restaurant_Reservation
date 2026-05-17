@@ -2,6 +2,7 @@ package com.restaurant.reservation.security;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.*;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.*;
 import org.springframework.security.config.annotation.authentication.configuration.*;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -39,11 +40,17 @@ public class SecurityConfig {
 
                 // Authorization rules
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll() // open endpoints
-                        .requestMatchers("/api/restaurants/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/restaurants/*/image/test").permitAll()
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/uploads/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/restaurants/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/restaurants/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/restaurants/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/restaurants/**").hasRole("ADMIN")
                         .requestMatchers("/api/availability/**").permitAll()
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN") // admin only
-                        .anyRequest().authenticated() // all other endpoints need auth
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .anyRequest().authenticated()
+
                 )
 
                 // Add JWT filter before default authentication filter
@@ -59,7 +66,7 @@ public class SecurityConfig {
 
         // Allowed frontend origin
         config.addAllowedOrigin("http://localhost:4200");
-
+        config.addAllowedOrigin( "https://*.ngrok-free.dev");
         // Allow all HTTP methods (GET, POST, PUT, DELETE...)
         config.addAllowedMethod("*");
 

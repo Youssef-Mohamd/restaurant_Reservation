@@ -2,11 +2,13 @@ package com.restaurant.reservation.controller;
 
 import com.restaurant.reservation.dto.request.CreateRestaurantRequest;
 import com.restaurant.reservation.dto.response.RestaurantResponse;
+import com.restaurant.reservation.service.FileStorageService;
 import com.restaurant.reservation.service.RestaurantService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
@@ -18,6 +20,7 @@ import java.util.List;
 public class RestaurantController {
 
     private final RestaurantService restaurantService;
+    private final FileStorageService fileStorageService;
 
     @PostMapping
     public ResponseEntity<RestaurantResponse> create(
@@ -30,8 +33,10 @@ public class RestaurantController {
     /**
      * Upload image for a restaurant
      * POST /api/restaurants/{id}/image
+     * Allowed: Restaurant owner OR any ADMIN user
      */
     @PostMapping("/{id}/image")
+   // @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<RestaurantResponse> uploadImage(
             @PathVariable Long id,
             @RequestParam("file") MultipartFile file,
@@ -41,7 +46,8 @@ public class RestaurantController {
             return ResponseEntity.badRequest().build();
         }
 
-        RestaurantResponse response = restaurantService.uploadImage(id, file, auth.getName());
+        String userEmail = auth.getName();
+        RestaurantResponse response = restaurantService.uploadImage(id, file, userEmail);
         return ResponseEntity.ok(response);
     }
 
@@ -69,5 +75,15 @@ public class RestaurantController {
     public ResponseEntity<Void> delete(@PathVariable Long id, Authentication auth) {
         restaurantService.delete(id, auth.getName());
         return ResponseEntity.noContent().build();
+    }
+
+
+    @PostMapping("/{id}/image/test")
+    public ResponseEntity<String> testUpload(
+            @PathVariable Long id,
+            @RequestParam("file") MultipartFile file) throws IOException {
+
+        String path = fileStorageService.saveRestaurantImage(file); // ← مش static
+        return ResponseEntity.ok("Uploaded: " + path);
     }
 }
