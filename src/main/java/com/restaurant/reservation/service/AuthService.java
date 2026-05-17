@@ -43,6 +43,8 @@ public class AuthService {
                 .phone(req.getPhone())
                 // Default role for new users
                 .role(Role.CUSTOMER)
+                // Set active status
+                .isActive(true)
                 .build();
 
         // Save user in database
@@ -85,6 +87,17 @@ public class AuthService {
 
         // Convert entity to response DTO
         return mapToResponse(user);
+    }
+
+    // ================= ADMIN VALIDATION =================
+    // Validate if user has ADMIN role
+    public void validateAdminRole(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        if (!user.getRole().equals(Role.ADMIN)) {
+            throw new RuntimeException("Access denied: Admin role required");
+        }
     }
 
     // ================= HELPERS =================
