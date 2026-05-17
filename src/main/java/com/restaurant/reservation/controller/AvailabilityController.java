@@ -1,5 +1,6 @@
 package com.restaurant.reservation.controller;
 
+import com.restaurant.reservation.dto.request.AvailabilityRequest;
 import com.restaurant.reservation.service.AvailabilityService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,13 +15,12 @@ public class AvailabilityController {
 
     private final AvailabilityService availabilityService;
 
-    @GetMapping
+    @PostMapping
     public ResponseEntity<List<String>> getAvailableSlots(
-            @RequestParam Long restaurantId,
-            @RequestParam String date,
-            @RequestParam int guests) {
+            @RequestBody AvailabilityRequest request) {
+
         return ResponseEntity.ok(
-                availabilityService.getAvailableSlots(
-                        restaurantId, LocalDate.parse(date), guests));
+                availabilityService.getAvailableSlots(request)
+        );
     }
 }
